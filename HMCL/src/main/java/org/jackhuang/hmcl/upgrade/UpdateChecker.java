@@ -108,6 +108,10 @@ public final class UpdateChecker {
     }
 
     public static void requestCheckUpdate(UpdateChannel channel, boolean preview) {
+        if (Metadata.DISABLE_UPDATE_CHECK) {
+            // BREAKFRONT: customized fork — never fetch or apply upstream HMCL updates.
+            return;
+        }
         Platform.runLater(() -> {
             if (isCheckingUpdate())
                 return;
