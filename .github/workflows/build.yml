@@ -37,13 +37,10 @@ jobs:
           JAVA_TOOL_OPTIONS: -Djava.awt.headless=true
           VERSION_TYPE: nightly
 
-      - name: Show build outputs
-        run: ls -la HMCL/build/libs
-
       - name: Get short SHA
         run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
-      - name: Collect branded artifacts
+      - name: Collect branded launcher artifacts
         run: |
           set -e
           mkdir -p out
@@ -52,6 +49,29 @@ jobs:
             f=$(ls HMCL/build/libs/HMCL-*.$ext 2>/dev/null | head -1 || true)
             if [ -n "$f" ]; then cp "$f" "out/${name}.${ext}"; fi
           done
+          ls -la out
+
+      - name: Build client modpack (MC 1.21.1 / Fabric, with preset server)
+        run: python3 pack/build_client_modpack.py --out out
+
+      - name: Assemble all-in-one distribution zip
+        run: |
+          set -e
+          name="BREAKFRONT-PC-Launcher-${SHORT_SHA}"
+          rm -rf dist && mkdir -p dist/.hmcl/modpack
+          cp "out/${name}.exe" dist/ 2>/dev/null || true
+          cp "out/${name}.jar" dist/
+          cp out/modpack.zip dist/.hmcl/modpack/modpack.zip
+          {
+            echo 'BREAKFRONT 破阵前线 · PC 启动器'
+            echo
+            echo 'Windows : 双击 BREAKFRONT-PC-Launcher-*.exe（需已安装 Java 17+）'
+            echo '其它平台: java -jar BREAKFRONT-PC-Launcher-*.jar'
+            echo
+            echo '首次启动会自动安装 BREAKFRONT 游戏实例（含模组与预置服务器 play.geekhonize.top）。'
+            echo '请勿删除 .hmcl 目录，且启动器需与 .hmcl 同目录运行。'
+          } > dist/README.txt
+          python3 -c "import shutil,os; shutil.make_archive('out/BREAKFRONT-PC-Launcher-'+os.environ['SHORT_SHA'], 'zip', 'dist')"
           ls -la out
 
       - name: Upload artifacts
@@ -70,4 +90,4 @@ jobs:
           gh release delete "${TAG}" --yes --cleanup-tag 2>/dev/null || true
           gh release create "${TAG}" out/* --prerelease \
             --title "BREAKFRONT PC Launcher (HMCL fork) dev ${SHORT_SHA}" \
-            --notes "Windows: 双击 .exe 运行（需 Java 17+，会自行查找 JRE）。跨平台: java -jar .jar。另有 .sh / .deb 供 Linux。基于 HMCL fork（BREAKFRONT 品牌 + Geekhonize 登录入口）。"
+            --notes "推荐：下载 BREAKFRONT-PC-Launcher-${SHORT_SHA}.zip（启动器 + 预置 BREAKFRONT 实例，首启自动安装）。单文件：.exe（Windows，需 Java 17+）/ .jar（跨平台）。"
