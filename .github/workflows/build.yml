@@ -91,3 +91,21 @@ jobs:
           gh release create "${TAG}" out/* --prerelease \
             --title "BREAKFRONT PC Launcher (HMCL fork) dev ${SHORT_SHA}" \
             --notes "推荐：下载 BREAKFRONT-PC-Launcher-${SHORT_SHA}.zip（启动器 + 预置 BREAKFRONT 实例，首启自动安装）。单文件：.exe（Windows，需 Java 17+）/ .jar（跨平台）。"
+
+      - name: Push version tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          JAR=$(ls HMCL/build/libs/HMCL-*.jar | head -1)
+          VER=$(basename "$JAR" .jar | sed -E 's/^HMCL-//')
+          TAG="v${VER}"
+          git config user.name "breakfront-ci"
+          git config user.email "ci@geekhonize.top"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "tag ${TAG} already exists, skip"
+          else
+            git tag "${TAG}"
+            git push origin "refs/tags/${TAG}"
+          fi
+          echo "VERSION_TAG=${TAG}" >> "$GITHUB_ENV"
