@@ -1,0 +1,52 @@
+name: build-pc
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 17 (Zulu + JavaFX)
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          java-package: 'jdk+fx'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-cleanup: never
+      - name: Ensure xvfb present
+        run: command -v xvfb-run >/dev/null 2>&1 || (sudo apt-get update >/dev/null && sudo apt-get install -y xvfb)
+      - name: Build with Gradle
+        run: xvfb-run --auto-servernum ./gradlew build --no-daemon --parallel
+        env:
+          JAVA_TOOL_OPTIONS: -Djava.awt.headless=true
+          VERSION_TYPE: nightly
+      - name: Get short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: breakfront-launcher-pc-${{ env.SHORT_SHA }}-jar
+          path: HMCL/build/libs/HMCL-*.jar
+          archive: false
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="launcher-pc-dev-${SHORT_SHA}"
+          gh release delete "${TAG}" --yes --cleanup-tag 2>/dev/null || true
+          ASSET=$(ls HMCL/build/libs/HMCL-*.jar | head -1)
+          gh release create "${TAG}" "${ASSET}" --prerelease \
+            --title "BREAKFRONT PC Launcher (HMCL fork) dev ${SHORT_SHA}" \
+            --notes "HMCL-based PC 启动器（breakfront-launcher-pc fork）。尚未品牌化/接入 Geekhonize 登录，后续迭代。运行：java -jar HMCL-*.jar"
