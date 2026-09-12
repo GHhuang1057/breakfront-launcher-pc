@@ -64,10 +64,11 @@ public final class AboutPage extends SpinnerPane {
             author.setTitle("huanghongxun");
             author.setSubtitle(i18n("about.author.statement"));
 
-            var geekhonize = LineButton.createExternalLinkButton("https://auth.geekhonize.top");
+            var geekhonize = new LineButton();
             geekhonize.setLargeTitle(true);
             geekhonize.setTitle(i18n("about.geekhonize.login"));
             geekhonize.setSubtitle(i18n("about.geekhonize.login.statement"));
+            geekhonize.setOnAction(e -> BreakfrontGeoLogin.start());
 
             about.getContent().setAll(launcher, author, geekhonize);
         }
