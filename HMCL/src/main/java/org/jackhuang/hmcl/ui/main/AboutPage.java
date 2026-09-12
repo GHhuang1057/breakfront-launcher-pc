@@ -64,7 +64,12 @@ public final class AboutPage extends SpinnerPane {
             author.setTitle("huanghongxun");
             author.setSubtitle(i18n("about.author.statement"));
 
-            about.getContent().setAll(launcher, author);
+            var geekhonize = LineButton.createExternalLinkButton("https://auth.geekhonize.top");
+            geekhonize.setLargeTitle(true);
+            geekhonize.setTitle(i18n("about.geekhonize.login"));
+            geekhonize.setSubtitle(i18n("about.geekhonize.login.statement"));
+
+            about.getContent().setAll(launcher, author, geekhonize);
         }
 
         ComponentList thanks = loadIconedTwoLineList("/assets/about/thanks.json");
