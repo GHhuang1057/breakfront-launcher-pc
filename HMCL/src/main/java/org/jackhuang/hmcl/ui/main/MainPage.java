@@ -312,7 +312,18 @@ public final class MainPage extends StackPane implements DecoratorPage {
             launchButton.addEventHandler(MouseEvent.MOUSE_CLICKED, secondaryClickHandle);
             menuButton.addEventHandler(MouseEvent.MOUSE_CLICKED, secondaryClickHandle);
 
-            launchPane.getChildren().setAll(launchButton, menuButton);
+            JFXButton geokhonizeButton = new JFXButton();
+            geokhonizeButton.setStyle("-fx-padding: 8 18; -fx-font-size: 13px; -fx-background-radius: 6px;");
+            geokhonizeButton.setCursor(Cursor.HAND);
+            geokhonizeButton.setText(i18n(BreakfrontGeoLogin.signedIn()
+                    ? "main.geekhonize.signed_in" : "main.geekhonize.login"));
+            geokhonizeButton.setOnAction(e -> {
+                BreakfrontGeoLogin.start();
+                geokhonizeButton.setText(i18n("main.geekhonize.login.started"));
+            });
+            FXUtils.installFastTooltip(geokhonizeButton, i18n("about.geekhonize.login.statement"));
+
+            launchPane.getChildren().setAll(geokhonizeButton, launchButton, menuButton);
         }
 
         getChildren().addAll(updatePane, launchPane);
