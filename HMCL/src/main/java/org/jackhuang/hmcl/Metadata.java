@@ -34,8 +34,8 @@ public final class Metadata {
     private Metadata() {
     }
 
-    public static final String NAME = "HMCL";
-    public static final String FULL_NAME = "Hello Minecraft! Launcher";
+    public static final String NAME = "BREAKFRONT";
+    public static final String FULL_NAME = "BREAKFRONT Launcher";
     public static final String VERSION = System.getProperty("hmcl.version.override", JarUtils.getAttribute("hmcl.version", "@develop@"));
 
     /// Explicit Application User Model ID used for Windows taskbar grouping and pinning.
@@ -48,10 +48,13 @@ public final class Metadata {
     public static final int MINIMUM_SUPPORTED_JAVA_VERSION = 17;
     public static final int RECOMMENDED_JAVA_VERSION = 21;
 
-    public static final String PUBLISH_URL = "https://hmcl.huangyuhui.net";
+    public static final String PUBLISH_URL = "https://mc.geekhonize.top";
     public static final String DOWNLOAD_URL = PUBLISH_URL + "/download";
     public static final String HMCL_UPDATE_URL = System.getProperty("hmcl.update_source.override", PUBLISH_URL + "/api/update_link");
-    public static final String MANUAL_UPDATE_URL = "https://github.com/HMCL-dev/HMCL/releases";
+    public static final String MANUAL_UPDATE_URL = "https://github.com/GHhuang1057/breakfront-launcher-pc/releases";
+
+    /// BREAKFRONT fork: disable upstream self-update so this customized build is never replaced by HMCL.
+    public static final boolean DISABLE_UPDATE_CHECK = true;
 
     public static final String DOCS_URL = "https://docs.hmcl.net";
     public static final String CONTACT_URL = DOCS_URL + "/help.html";
