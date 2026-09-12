@@ -58,6 +58,7 @@ import org.jackhuang.hmcl.ui.SVG;
 import org.jackhuang.hmcl.ui.animation.AnimationUtils;
 import org.jackhuang.hmcl.ui.animation.ContainerAnimations;
 import org.jackhuang.hmcl.ui.animation.TransitionPane;
+import org.jackhuang.hmcl.ui.construct.LineButton;
 import org.jackhuang.hmcl.ui.construct.MessageDialogPane;
 import org.jackhuang.hmcl.ui.construct.TwoLineListItem;
 import org.jackhuang.hmcl.ui.decorator.DecoratorPage;
@@ -325,6 +326,23 @@ public final class MainPage extends StackPane implements DecoratorPage {
 
             launchPane.getChildren().setAll(geokhonizeButton, launchButton, menuButton);
         }
+
+        LineButton geoButton = new LineButton();
+        geoButton.setLargeTitle(true);
+        FXUtils.setLimitWidth(geoButton, 280);
+        FXUtils.setLimitHeight(geoButton, 62);
+        geoButton.setTitle(i18n("breakfront.geo.title"));
+        geoButton.setOnAction(e -> BreakfrontGeoLogin.start());
+        BreakfrontGeoLogin.setSuccessCallback(() -> geoButton.setSubtitle(
+                BreakfrontGeoLogin.signedIn()
+                        ? i18n("breakfront.geo.signed_in", BreakfrontGeoLogin.savedUsername())
+                        : i18n("breakfront.geo.not_signed_in")));
+        geoButton.setSubtitle(BreakfrontGeoLogin.signedIn()
+                ? i18n("breakfront.geo.signed_in", BreakfrontGeoLogin.savedUsername())
+                : i18n("breakfront.geo.not_signed_in"));
+        StackPane.setAlignment(geoButton, Pos.TOP_LEFT);
+        StackPane.setMargin(geoButton, new Insets(4));
+        getChildren().add(geoButton);
 
         getChildren().addAll(updatePane, launchPane);
 
