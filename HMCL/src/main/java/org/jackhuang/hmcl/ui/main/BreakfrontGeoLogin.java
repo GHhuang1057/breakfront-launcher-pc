@@ -57,6 +57,43 @@ public final class BreakfrontGeoLogin {
         t.start();
     }
 
+    private static volatile @Nullable Runnable successCallback;
+
+    /** 主页等处的登录入口可注册回调，登录成功后刷新自己的状态展示。 */
+    public static void setSuccessCallback(@Nullable Runnable callback) {
+        successCallback = callback;
+    }
+
+    /** 当前是否已登录（读游戏目录的会话文件）。 */
+    public static boolean signedIn() {
+        try {
+            for (String line : Files.readAllLines(sessionFile())) {
+                if (line.startsWith(KEY_TOKEN + "=") && line.length() > KEY_TOKEN.length() + 1) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
+    /** 已登录用户名（未登录返回空串）。 */
+    public static String savedUsername() {
+        try {
+            for (String line : Files.readAllLines(sessionFile())) {
+                if (line.startsWith(KEY_USER + "=")) {
+                    return line.substring(KEY_USER.length() + 1).trim();
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return "";
+    }
+
+    private static Path sessionFile() {
+        return gameDirectory().resolve("config").resolve(PROPS_NAME);
+    }
+
     private static void run() {
         try {
             @Nullable String code = requestCode();
@@ -78,28 +115,20 @@ public final class BreakfrontGeoLogin {
             }
 
             Path file = writeSession(token);
+            Platform.runLater(() -> {
+                @Nullable Runnable callback = successCallback;
+                if (callback != null) {
+                    try {
+                        callback.run();
+                    } catch (Throwable ignored) {
+                    }
+                }
+            });
             dialog("Geekhonize 登录成功！\n\n令牌已写入：\n" + file
                     + "\n\n直接进入游戏即可自动登录，无需再手抄令牌。");
         } catch (Throwable e) {
             dialog("Geekhonize 登录失败：" + e);
         }
-    }
-
-    /** 当前游戏实例目录里是否已写入 Geekhonize 令牌。 */
-    public static boolean signedIn() {
-        try {
-            Path file = gameDirectory().resolve("config").resolve(PROPS_NAME);
-            if (!Files.isRegularFile(file)) {
-                return false;
-            }
-            for (String line : Files.readAllLines(file)) {
-                if (line.startsWith(KEY_TOKEN + "=")) {
-                    return line.length() > KEY_TOKEN.length() + 1;
-                }
-            }
-        } catch (Throwable ignored) {
-        }
-        return false;
     }
 
     private static @Nullable String requestCode() throws Exception {
@@ -155,7 +184,7 @@ public final class BreakfrontGeoLogin {
 
     /** 把令牌写进游戏目录的 config/breakfront-client.properties（保留其它配置键）。 */
     static Path writeSession(String token) throws Exception {
-        Path file = gameDirectory().resolve("config").resolve(PROPS_NAME);
+        Path file = sessionFile();
         if (file.getParent() != null) {
             Files.createDirectories(file.getParent());
         }
