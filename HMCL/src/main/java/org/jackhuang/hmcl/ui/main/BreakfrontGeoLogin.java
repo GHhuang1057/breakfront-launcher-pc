@@ -85,6 +85,23 @@ public final class BreakfrontGeoLogin {
         }
     }
 
+    /** 当前游戏实例目录里是否已写入 Geekhonize 令牌。 */
+    public static boolean signedIn() {
+        try {
+            Path file = gameDirectory().resolve("config").resolve(PROPS_NAME);
+            if (!Files.isRegularFile(file)) {
+                return false;
+            }
+            for (String line : Files.readAllLines(file)) {
+                if (line.startsWith(KEY_TOKEN + "=")) {
+                    return line.length() > KEY_TOKEN.length() + 1;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
+    }
+
     private static @Nullable String requestCode() throws Exception {
         HttpResponse<String> resp = post(DEVICE_START, "{}");
         if (resp == null || resp.statusCode() / 100 != 2) {
